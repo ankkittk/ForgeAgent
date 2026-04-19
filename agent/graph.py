@@ -1,20 +1,20 @@
 from dotenv import load_dotenv
 load_dotenv()
 
+from agent.prompts import planner_prompt
 from langchain_groq import ChatGroq
+from agent.states import Plan, File
 
 llm = ChatGroq(model="openai/gpt-oss-120b")
 
-from pydantic import BaseModel
+user_prompt = "Create a simple calculator web application using HTML, CSS, and JavaScript."
 
-class Schema(BaseModel):
-    price: float
-    eps: float
 
-resp = llm.with_structured_output(Schema).invoke(
-    "Extract Price and EPS from this "
-    "NVIDIA reported quarterly EPS of 2.3 and "
-    "their current price is $100."
-)
+#---------------------------------------
 
-print(resp)
+prompt = planner_prompt(user_prompt)
+
+
+response = llm.with_structured_output(Plan).invoke(prompt)
+
+print(response.model_dump_json(indent=1))
