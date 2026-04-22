@@ -23,11 +23,6 @@ def planner_agent(state: dict) -> dict:
     resp = llm.with_structured_output(Plan).invoke(planner_prompt(users_prompt))
     return {"plan": resp}
 
-state = {
-    "user_prompt": user_prompt,
-    "plan": None
-}
-
 graph = StateGraph(dict)
 graph.add_node("planner", planner_agent)
 graph.add_edge(START, "planner")
