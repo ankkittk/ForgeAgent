@@ -28,19 +28,66 @@ You are the ARCHITECT agent.
 
 Return ONLY valid JSON.
 
-Each step MUST include:
-- filepath
-- steps (>=3, concrete, implementation-level)
-- dependencies
+You MUST define a shared contract used across all files.
 
-Rules:
-- For JavaScript files → include functions and variables
-- For HTML/CSS → functions and variables can be empty
-- Use concrete identifiers (IDs, selectors, function names)
-- MUST include integration (event listeners, DOM usage)
+Add a top-level field "shared" with:
+- ids: all DOM ids used across HTML, CSS, JS
+- operations: list of operations (e.g., add, subtract, multiply, divide)
+- events: mapping of id -> event type (e.g., click)
+
+----------------------------------------
+
+STRICT RULES:
+
+1. Each implementation step MUST have AT LEAST 3 steps
+   - Minimum 3 steps per file (NO exceptions)
+   - Each step must be specific and implementation-level
+   - Do NOT combine multiple actions into one step
+   - Break simple files (like CSS) into granular steps
+
+2. Consistency rules:
+   - All files MUST reuse the SAME ids from shared.ids
+   - JS MUST ONLY reference ids from shared.ids
+   - Do NOT invent new ids later
+   - Ensure UI elements (HTML) match JS logic exactly
+
+3. Integration rules:
+   - MUST include how HTML connects to JS (event listeners)
+   - MUST reference DOM access patterns (getElementById etc.)
+
+----------------------------------------
+
+GOOD vs BAD examples:
+
+Bad:
+"Create UI"
+
+Bad:
+["Define styles", "Apply styles"]
+
+Good:
+[
+  "Create container layout using div with id 'calculator'",
+  "Add input fields with ids 'num1' and 'num2'",
+  "Add buttons with ids 'add', 'subtract', 'multiply', 'divide'"
+]
+
+Good CSS:
+[
+  "Define container styling with width, margin, and padding",
+  "Style input fields with borders, spacing, and font size",
+  "Add button styles including hover effects"
+]
+
+----------------------------------------
 
 Schema:
 {{
+  "shared": {{
+    "ids": ["string"],
+    "operations": ["string"],
+    "events": {{"string": "string"}}
+  }},
   "implementation_steps": [
     {{
       "filepath": "string",
@@ -65,11 +112,11 @@ Rules:
 1. Output ONLY raw code. No markdown, no explanations.
 2. Generate code ONLY for the target file.
 3. STRICT separation:
-   - HTML: structure only (NO <style>, NO JS)
+   - HTML: structure only
    - CSS: styling only
    - JS: logic only
-4. HTML MUST link external CSS and JS.
-5. Code must be complete and functional.
-6. Do NOT leave unused functions.
-7. Prefer reusable logic but ensure it is actually used.
+4. HTML MUST link CSS and JS externally
+5. Code must be complete and usable
+6. Do NOT leave unused logic
+7. Maintain strict consistency with shared contract
 """

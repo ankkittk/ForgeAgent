@@ -8,14 +8,12 @@ from states import Plan, TaskPlan, validate_taskplan
 from langgraph.constants import START, END
 from langgraph.graph import StateGraph
 
-#----------------------------------------------------------------------------------------------------------------------------------
-
 llm = ChatGroq(
     model="llama-3.3-70b-versatile",
     temperature=0,
 )
 
-#----------------------------------------------------------------------------------------------------------------------------------
+# ------------------------
 
 def clean_code(code: str) -> str:
     code = code.strip()
@@ -29,12 +27,13 @@ def clean_code(code: str) -> str:
 
     return code.strip()
 
-#----------------------------------------------------------------------------------------------------------------------------------
+# ------------------------
 
 def planner_agent(state: dict) -> dict:
     users_prompt = state["user_prompt"]
     resp = llm.with_structured_output(Plan).invoke(planner_prompt(users_prompt))
     return {"plan": resp}
+
 
 def architect_agent(state: dict) -> dict:
     plan = state["plan"]
@@ -50,8 +49,10 @@ def architect_agent(state: dict) -> dict:
 
     raise ValueError("Architect failed after retries")
 
+
 def coder_agent(state: dict) -> dict:
     steps = state["task_plan"].implementation_steps
+    shared = state["task_plan"].shared
     system_prompt = coder_system_prompt()
 
     outputs = []
@@ -63,14 +64,18 @@ def coder_agent(state: dict) -> dict:
 
 Target file: {task.filepath}
 
+Shared Contract:
+{shared}
+
 Requirements:
 {steps_text}
 
 Constraints:
-- Only write code for this file
-- Code must be COMPLETE and usable
-- Do NOT leave unused functions
-- Ensure logic is connected (e.g., UI → JS via events)
+- Use ONLY ids from shared.ids
+- Follow shared.events
+- Do NOT invent new ids
+- Ensure JS matches HTML exactly
+- Code must be complete
 """
 
         resp = llm.invoke(system_prompt + "\n\n" + user_prompt)
@@ -84,7 +89,7 @@ Constraints:
 
     return {"code": outputs}
 
-#----------------------------------------------------------------------------------------------------------------------------------
+# ------------------------
 
 graph = StateGraph(dict)
 graph.add_node("planner", planner_agent)
@@ -97,8 +102,6 @@ graph.add_edge("architect", "coder")
 graph.add_edge("coder", END)
 
 agent = graph.compile()
-
-#----------------------------------------------------------------------------------------------------------------------------------
 
 user_prompt = "Create a simple calculator web application using HTML, CSS, and JavaScript."
 

@@ -25,6 +25,10 @@ class ImplementationTask(BaseModel):
 
 class TaskPlan(BaseModel):
     implementation_steps: list[ImplementationTask] = Field(min_items=1)
+
+    # ✅ NEW: shared contract
+    shared: dict = Field(default_factory=dict)
+
     model_config = ConfigDict(extra="allow")
 
 
