@@ -37,13 +37,7 @@ Rules:
 - For JavaScript files → include functions and variables
 - For HTML/CSS → functions and variables can be empty
 - Use concrete identifiers (IDs, selectors, function names)
-- Include integration details (DOM selectors, event flow)
-
-Bad:
-"Create UI"
-
-Good:
-"Create <input id='display'> and query it using document.getElementById('display') in script.js"
+- MUST include integration (event listeners, DOM usage)
 
 Schema:
 {{
@@ -60,4 +54,22 @@ Schema:
 
 Project Plan:
 {plan}
+"""
+
+
+def coder_system_prompt() -> str:
+    return """
+You are a senior software engineer.
+
+Rules:
+1. Output ONLY raw code. No markdown, no explanations.
+2. Generate code ONLY for the target file.
+3. STRICT separation:
+   - HTML: structure only (NO <style>, NO JS)
+   - CSS: styling only
+   - JS: logic only
+4. HTML MUST link external CSS and JS.
+5. Code must be complete and functional.
+6. Do NOT leave unused functions.
+7. Prefer reusable logic but ensure it is actually used.
 """
