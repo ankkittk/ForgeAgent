@@ -6,25 +6,33 @@ class File(BaseModel):
         description="The purpose of the file, e.g. 'main application logic', 'data processing module', etc."
     )
 
+
 class Plan(BaseModel):
-    name: str = Field(description="The name of app to be built")
-    description: str = Field(
-        description="A oneline description of the app to be built, e.g. 'A web application for managing personal finances'"
-    )
-    techstack: str = Field(
-        description="The tech stack to be used for the app, e.g. 'python', 'javascript', 'react', 'flask', etc"
-    )
-    features: list[str] = Field(
-        description="A list of features that the app should have, e.g. 'user authentication', 'data visualization'"
-    )
-    files: list[File] = Field(
-        description="A list of files to be created, each with a 'path' and 'purpose'"
-    )
+    name: str
+    description: str
+    techstack: str
+    features: list[str]
+    files: list[File]
+
 
 class ImplementationTask(BaseModel):
-    filepath: str = Field(description="The path to the file to be modified")
-    task_description: str = Field(description="A detailed description of the task to be performed on the file, e.g. 'add user authentication', 'implement data processing logic', etc.")
+    filepath: str
+    functions: list[str] = Field(default_factory=list)
+    variables: list[str] = Field(default_factory=list)
+    steps: list[str] = Field(min_items=3)
+    dependencies: list[str] = Field(default_factory=list)
+
 
 class TaskPlan(BaseModel):
-    implementation_steps: list[ImplementationTask] = Field(description="A list of steps to be taken to implement the task")
+    implementation_steps: list[ImplementationTask] = Field(min_items=1)
     model_config = ConfigDict(extra="allow")
+
+
+def validate_taskplan(task_plan: TaskPlan):
+    for step in task_plan.implementation_steps:
+        if len(step.steps) < 3:
+            raise ValueError("Too few steps")
+
+        for s in step.steps:
+            if "create" in s.lower() and len(s.split()) < 5:
+                raise ValueError("Step too vague")
