@@ -163,3 +163,26 @@ RULES
 5. Maintain strict consistency with shared contract
 6. Ensure all interactions are implemented and working
 """
+
+
+def verifier_prompt(code: str, filepath: str) -> str:
+    return f"""
+You are a strict code reviewer.
+
+Task:
+Review the following code and fix any bugs.
+
+Requirements:
+- Ensure all UI interactions are correctly wired
+- Ensure event handling works
+- Ensure logic is complete and functional
+- Fix any broken conditions or incorrect assumptions
+- Do NOT change structure unnecessarily
+
+Return ONLY corrected code.
+
+File: {filepath}
+
+Code:
+{code}
+"""

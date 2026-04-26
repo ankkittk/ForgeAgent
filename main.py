@@ -4,9 +4,9 @@ import streamlit as st
 
 from agent.graph import run_generation
 
-st.set_page_config(page_title="Coder Buddy", layout="wide")
+st.set_page_config(page_title="ForgeAgent", layout="wide")
 
-st.title("🧠 Coder Buddy Agent")
+st.title("🧠 ForgeAgent - Your personal AI Coder Buddy")
 
 user_input = st.text_area(
     "Enter your project request:",

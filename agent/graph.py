@@ -4,7 +4,7 @@ load_dotenv()
 import json
 from typing import Type, TypeVar
 
-from agent.prompts import architect_prompt, planner_prompt, coder_system_prompt
+from agent.prompts import architect_prompt, planner_prompt, coder_system_prompt, verifier_prompt
 from langchain_groq import ChatGroq
 from agent.states import Plan, TaskPlan, validate_taskplan
 from langgraph.constants import START, END
@@ -131,6 +131,11 @@ Constraints:
         raw = llm.invoke(system_prompt + "\n\n" + user_prompt).content
         cleaned = clean_code(raw)
 
+        review_prompt = verifier_prompt(cleaned, task.filepath)
+        fixed = llm.invoke(review_prompt).content
+        cleaned = clean_code(fixed)
+
+        # Now write final (verified) code
         write_file.invoke({
             "path": task.filepath,
             "content": cleaned
