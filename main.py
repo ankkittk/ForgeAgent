@@ -1,6 +1,8 @@
+from pathlib import Path
+
 import streamlit as st
-import json
-from agent.graph import agent
+
+from agent.graph import run_generation
 
 st.set_page_config(page_title="Coder Buddy", layout="wide")
 
@@ -16,13 +18,25 @@ if st.button("Generate Project"):
         st.warning("Please enter a prompt")
     else:
         with st.spinner("Generating..."):
-            result = agent.invoke({"user_prompt": user_input})
+            result = run_generation(user_input)
 
         st.success("Project Generated!")
 
-        # Show files
-        for file in result["code"]:
-            st.subheader(file["filepath"])
-            st.code(file["code"], language="html")
+        files = result.get("code", [])
+        st.write(f"Generated {len(files)} file(s).")
+
+        for file in files:
+            suffix = Path(file["filepath"]).suffix.lower()
+            language = {
+                ".html": "html",
+                ".css": "css",
+                ".js": "javascript",
+                ".json": "json",
+                ".py": "python",
+                ".txt": "text",
+            }.get(suffix, "text")
+
+            with st.expander(file["filepath"], expanded=False):
+                st.code(file["code"], language=language)
 
         st.info("Files saved in: generated_project/")

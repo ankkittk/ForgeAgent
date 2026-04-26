@@ -26,7 +26,6 @@ class ImplementationTask(BaseModel):
 class TaskPlan(BaseModel):
     implementation_steps: list[ImplementationTask] = Field(min_items=1)
 
-    # ✅ NEW: shared contract
     shared: dict = Field(default_factory=dict)
 
     model_config = ConfigDict(extra="allow")
@@ -35,7 +34,7 @@ class TaskPlan(BaseModel):
 def validate_taskplan(task_plan: TaskPlan):
     for step in task_plan.implementation_steps:
         if len(step.steps) < 3:
-            raise ValueError("Too few steps")
+            raise ValueError("Each file must have at least 3 detailed implementation steps")
 
         for s in step.steps:
             if "create" in s.lower() and len(s.split()) < 5:

@@ -2,8 +2,16 @@ def planner_prompt(user_prompt: str) -> str:
     return f"""
 You are the PLANNER agent.
 
-Return ONLY valid JSON matching this schema:
+Return ONLY valid JSON.
 
+Rules:
+- If the request is a simple web app or browser-based game:
+  → Use ONLY HTML, CSS, JavaScript
+  → DO NOT include backend frameworks (Flask, Django, FastAPI, etc.)
+  → DO NOT include testing tools like Selenium
+- Choose the minimal tech stack required
+
+Schema:
 {{
   "name": "string",
   "description": "string",
@@ -28,59 +36,76 @@ You are the ARCHITECT agent.
 
 Return ONLY valid JSON.
 
-You MUST define a shared contract used across all files.
+----------------------------------------
+PROBLEM INTERPRETATION (MANDATORY)
 
-Add a top-level field "shared" with:
-- ids: all DOM ids used across HTML, CSS, JS
-- operations: list of operations (e.g., add, subtract, multiply, divide)
-- events: mapping of id -> event type (e.g., click)
+Before defining steps:
+- Identify the system type:
+  (e.g., calculator = stateful input processor,
+         tic tac toe = turn-based rule-based game)
+
+- Identify required capabilities:
+  (interaction, state updates, rule evaluation, UI feedback)
 
 ----------------------------------------
+SYSTEM QUALITY CONSTRAINTS
 
-STRICT RULES:
+1. Completeness:
+- Fully solve the problem end-to-end
+- No placeholders or partial logic
 
-1. Each implementation step MUST have AT LEAST 3 steps
-   - Minimum 3 steps per file (NO exceptions)
-   - Each step must be specific and implementation-level
-   - Do NOT combine multiple actions into one step
-   - Break simple files (like CSS) into granular steps
+2. Interaction:
+- All user-facing elements must be interactive
+- Actions must produce visible results immediately
 
-2. Consistency rules:
-   - All files MUST reuse the SAME ids from shared.ids
-   - JS MUST ONLY reference ids from shared.ids
-   - Do NOT invent new ids later
-   - Ensure UI elements (HTML) match JS logic exactly
+3. State Management:
+- Maintain internal state where required
+- Update state correctly on every interaction
 
-3. Integration rules:
-   - MUST include how HTML connects to JS (event listeners)
-   - MUST reference DOM access patterns (getElementById etc.)
+4. Consistency:
+- UI, logic, and structure must align
+- No unused or disconnected components
 
-----------------------------------------
+5. Minimality:
+- Use the simplest architecture that fully solves the problem
+- No unnecessary technologies
 
-GOOD vs BAD examples:
-
-Bad:
-"Create UI"
-
-Bad:
-["Define styles", "Apply styles"]
-
-Good:
-[
-  "Create container layout using div with id 'calculator'",
-  "Add input fields with ids 'num1' and 'num2'",
-  "Add buttons with ids 'add', 'subtract', 'multiply', 'divide'"
-]
-
-Good CSS:
-[
-  "Define container styling with width, margin, and padding",
-  "Style input fields with borders, spacing, and font size",
-  "Add button styles including hover effects"
-]
+6. Robustness:
+- Handle invalid inputs or edge cases where applicable
 
 ----------------------------------------
+ANTI-PATTERNS (STRICTLY FORBIDDEN)
 
+- Placeholder UI without logic
+- Disconnected components (UI not linked to logic)
+- Oversimplified solutions when richer interaction is implied
+- Introducing unrelated technologies (Flask, Selenium, etc.)
+
+----------------------------------------
+FRONTEND RULES
+
+- Use ONLY HTML, CSS, JavaScript for simple apps/games
+- JS must control behavior and state
+- HTML must define meaningful structure
+- CSS must improve usability (not just minimal styling)
+
+----------------------------------------
+SHARED CONTRACT (MANDATORY)
+
+Define:
+- ids → all DOM ids
+- events → interaction mapping
+- operations → system actions
+
+----------------------------------------
+IMPLEMENTATION REQUIREMENTS
+
+Each file MUST:
+- Have at least 3 detailed steps
+- Use concrete identifiers (ids, functions, variables)
+- Include interaction and logic where applicable
+
+----------------------------------------
 Schema:
 {{
   "shared": {{
@@ -101,22 +126,40 @@ Schema:
 
 Project Plan:
 {plan}
+
+----------------------------------------
+OUTPUT FORMAT ENFORCEMENT (CRITICAL)
+
+- Output MUST strictly follow the JSON schema
+- Each file MUST have at least 3 steps
+- If a file seems simple, break it into smaller logical steps
+- Do NOT reduce steps below 3 under any condition
 """
 
 
 def coder_system_prompt() -> str:
     return """
-You are a senior software engineer.
+You are a senior frontend engineer.
 
-Rules:
-1. Output ONLY raw code. No markdown, no explanations.
-2. Generate code ONLY for the target file.
+----------------------------------------
+ENGINEERING EXPECTATIONS
+
+- Code must be functionally complete and usable
+- All defined features must be implemented and connected
+- No unused logic or dead code
+- Avoid trivial implementations when richer behavior is implied
+- Prefer clean structure over brute-force repetition
+
+----------------------------------------
+RULES
+
+1. Output ONLY raw code (no markdown, no explanation)
+2. Generate code ONLY for the target file
 3. STRICT separation:
-   - HTML: structure only
-   - CSS: styling only
-   - JS: logic only
-4. HTML MUST link CSS and JS externally
-5. Code must be complete and usable
-6. Do NOT leave unused logic
-7. Maintain strict consistency with shared contract
+   - HTML → structure only
+   - CSS → styling only
+   - JS → logic only
+4. Do NOT introduce backend or unrelated technologies
+5. Maintain strict consistency with shared contract
+6. Ensure all interactions are implemented and working
 """
